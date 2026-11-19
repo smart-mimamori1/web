@@ -1,0 +1,174 @@
+/* =========================================================
+   見守り画面（Web横並びレイアウト）
+   デザイン：Webアプリ画面_見守り画面 に準拠
+   ========================================================= */
+:root{
+  --pink:#d6336c;--teal:#149687;--orange:#f59f00;--red:#e03131;--blue:#2f6fdb;--green:#2b8a3e;
+  --ink:#222;--sub:#6b6f76;--line:#e6e8ec;--bg:#f6f7f9
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font-family:inherit}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- ログイン ---------- */
+.login-screen{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--bg)}
+.login-card{width:min(100%,400px);background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px;box-shadow:0 12px 36px rgba(214,51,108,.10)}
+.login-mark{width:56px;height:56px;border-radius:16px;background:var(--pink);color:#fff;display:grid;place-items:center;font-size:30px;margin:0 auto 14px}
+.login-card h1{text-align:center;font-size:1.5rem;margin:0 0 6px;color:var(--pink)}
+.login-subtitle{text-align:center;color:var(--sub);margin:0 0 24px}
+.login-card label{display:block;font-weight:700;margin:14px 0 6px}
+.login-card input{width:100%;padding:12px;border:1px solid #ced4da;border-radius:10px;font:inherit}
+.login-card input:focus{outline:2px solid var(--pink);outline-offset:1px}
+.login-card button{width:100%;margin-top:20px;padding:13px;border:0;border-radius:999px;background:var(--pink);color:#fff;font:inherit;font-weight:700;font-size:17px;cursor:pointer}
+.login-error{min-height:1.4em;color:var(--red);font-size:.9rem}
+.login-warning{font-size:.8rem;color:var(--sub);line-height:1.6;margin-top:18px}
+
+/* ---------- ヘッダー ---------- */
+.topbar{background:var(--pink);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 32px;position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.topbar h1{margin:0;font-size:28px;font-weight:700;letter-spacing:.05em}
+.topbar .meta{font-size:16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.conn{display:inline-flex;align-items:center}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffe066;margin-right:6px}
+.dot.ok{background:#8ce99a}.dot.bad{background:#ffa8a8}
+.icon-btn{border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.15);color:#fff;border-radius:999px;width:40px;height:40px;font-size:22px;cursor:pointer;line-height:1}
+.logout-btn{border:1px solid rgba(255,255,255,.7);border-radius:999px;padding:8px 16px;background:#fff;color:var(--pink);font-weight:700;font-size:15px;cursor:pointer}
+
+/* ---------- レイアウト ---------- */
+main{padding:24px 32px 32px;display:grid;gap:20px;max-width:1600px;margin:0 auto}
+.row{display:grid;gap:20px;align-items:start}
+.r4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.r3{grid-template-columns:1.25fr 1fr 1fr;align-items:stretch}
+.r2{grid-template-columns:1.6fr 1fr}
+.r4>.card,.r2>.card{height:100%}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0}
+.card h2{margin:0 0 14px;font-size:18px;color:var(--sub);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.big{font-size:44px;font-weight:700;line-height:1.1}
+.big small{font-size:22px;margin-left:4px;color:var(--sub);font-weight:400}
+.note{color:var(--sub);font-size:15px;margin:8px 0 0;line-height:1.5}
+
+/* ---------- システム状態バー ---------- */
+.alert-card{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-size:15px}
+.alert-card .sys-icon{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#e6f7ee;color:var(--green);font-weight:700;font-size:14px;flex:none}
+.alert-card .sys-detail{color:var(--sub)}
+.alert-card.warning{background:#fff9ec;border-color:#ffd8a8}
+.alert-card.warning .sys-icon{background:var(--orange);color:#fff}
+.alert-card.error{background:#fff0f0;border-color:#ffc9c9}
+.alert-card.error .sys-icon{background:var(--red);color:#fff}
+
+/* ---------- 呼び出しアラート ---------- */
+.call-alert{background:#fff;border:2px solid var(--line);border-radius:14px;padding:16px 22px;display:flex;align-items:center;gap:18px}
+.call-alert .alert-icon{width:46px;height:46px;border-radius:50%;background:#adb5bd;display:grid;place-items:center;color:#fff;font-size:24px;font-weight:700;flex:none}
+.call-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.call-text b{font-size:22px;color:var(--ink)}
+.call-text span{color:var(--sub);font-size:16px}
+.call-text .audio-status{font-size:13px}
+.alert-actions{display:flex;gap:10px;flex-wrap:wrap}
+.call-alert.active{background:#fff0f0;border-color:var(--red)}
+.call-alert.active .alert-icon{background:var(--red)}
+.call-alert.active b{color:var(--red)}
+.call-alert.acknowledged{background:#fff;border-color:var(--line)}
+
+/* ---------- ボタン類 ---------- */
+.btn{border:none;border-radius:999px;padding:12px 26px;font-weight:700;font-size:18px;color:#fff;cursor:pointer;white-space:nowrap}
+.btn.teal{background:var(--teal)}.btn.gray{background:#adb5bd}.btn.orange{background:var(--orange)}.btn.dark{background:#495057}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);padding:10px 20px}
+.btn.mini{padding:8px 18px;font-size:15px}
+.btn:disabled{background:#dee2e6;color:#adb5bd;border-color:#dee2e6;cursor:not-allowed}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.pill{display:inline-block;padding:6px 16px;border-radius:999px;font-weight:700;font-size:18px;background:#f1f3f5;color:var(--sub)}
+.pill.sm{font-size:14px;padding:4px 12px}
+.ok{background:#e6f7ee;color:var(--green)}
+.warn{background:#fff4e0;color:#c77700}
+.info{background:#e7f0ff;color:var(--blue)}
+.danger{background:#fff0f0;color:var(--red)}
+.idle{background:#f1f3f5;color:var(--sub)}
+
+/* セグメント（自動/手動・期間・グラフ項目） */
+.seg,.tabs{display:inline-flex;background:#f1f3f5;border-radius:999px;padding:4px}
+.seg button,.tabs button{border:none;background:none;padding:8px 20px;border-radius:999px;font-weight:700;font-size:16px;color:var(--sub);cursor:pointer}
+.seg button.active,.tabs button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.card h2 .seg button{font-size:15px;padding:7px 16px}
+
+/* ガス検知中のカード */
+#gasCard.alarm{background:#fff0f0;border:2px solid var(--red)}
+#gasCard.alarm .pill{background:var(--red);color:#fff}
+
+/* ---------- サーキュレーター ---------- */
+.fanrow{display:flex;align-items:center;gap:16px;margin:6px 0 14px}
+.lbl{font-size:16px;color:var(--sub);width:88px;flex:none}
+.sub{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.subt{font-size:15px;font-weight:700;color:var(--sub);margin-bottom:10px}
+.sub.off .subt,.sub.off .step{opacity:.45}
+.step{display:flex;align-items:center;gap:10px;margin:8px 0}
+.step>span{flex:1;font-size:18px;font-weight:700}
+.step small{display:block;font-size:13px;color:var(--sub);font-weight:400}
+.temperature-step{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:#fff;font-weight:700;font-size:22px;cursor:pointer;color:var(--ink);flex:none}
+.temperature-step:disabled{opacity:.35;cursor:not-allowed}
+.temperature-value{font-size:30px;font-weight:700;width:48px;text-align:right}
+.step em{font-style:normal;color:var(--sub);margin-right:4px}
+#autoSection .btnrow{margin-top:12px}
+
+/* ---------- 通知トグル ---------- */
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);font-size:18px;cursor:pointer}
+.toggle:last-of-type{border-bottom:none}
+.toggle .d{color:var(--sub);font-size:14px;display:block}
+.switch{appearance:none;-webkit-appearance:none;width:64px;height:36px;border-radius:999px;background:#ced4da;position:relative;flex:none;cursor:pointer;margin:0;transition:background .2s}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch:checked{background:var(--teal)}
+.switch:checked::after{left:32px}
+.switch:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* ---------- リスト（起床・出来事） ---------- */
+.list{margin:0;padding:0;list-style:none}
+.list li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:17px}
+.list li:last-child{border-bottom:none}
+.list.wk li{padding:8px 0;font-size:16px}
+.event-time{color:var(--sub);width:56px;flex:none;font-size:16px}
+.events li>span:last-child{flex:1;min-width:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.event-tag{font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff;background:#868e96;white-space:nowrap}
+.event-tag[data-cat="呼び出し"]{background:var(--red)}
+.event-tag[data-cat="ドア"]{background:var(--blue)}
+.event-tag[data-cat="家電"]{background:var(--orange)}
+.event-tag[data-cat="ベッド"]{background:var(--green)}
+.event-tag[data-cat="ガス"]{background:#c2255c}
+.event-tag[data-cat="通知"]{background:var(--teal)}
+
+/* ---------- グラフ ---------- */
+.chart-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.tabs button{font-size:15px;padding:7px 16px}
+.legend{display:flex;gap:18px;font-size:15px;color:var(--sub);align-items:center}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--orange)}
+.chart-wrap{height:320px;position:relative;width:100%}
+canvas{width:100%;height:100%;display:block}
+.chart-empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--sub);font-size:15px;text-align:center;pointer-events:none}
+
+/* ---------- レスポンシブ ---------- */
+@media (max-width:1280px){
+  .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .r3>.card:first-child{grid-row:span 2}
+}
+@media (max-width:1000px){
+  .r4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .r2{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .topbar{padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px}
+  .topbar h1{font-size:22px}
+  .topbar .meta{font-size:13px;gap:12px;justify-content:flex-start}
+  main{padding:16px;gap:14px}
+  .r3{grid-template-columns:1fr}
+  .r3>.card:first-child{grid-row:auto}
+  .big{font-size:34px}
+  .call-alert{flex-wrap:wrap;padding:14px 16px}
+  .alert-actions{width:100%}
+  .alert-actions .btn{flex:1}
+  .chart-wrap{height:240px}
+}
+@media (max-width:420px){
+  .r4{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

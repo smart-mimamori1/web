@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#d6336c">
+  <meta name="description" content="室内監視システムの状態とセンサー履歴を確認するアプリ">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>見守り画面｜室内監視システム</title>
+</head>
+<body>
+  <!-- ログイン画面 -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-mark">⌂</div>
+      <h1>見守り画面</h1>
+      <p class="login-subtitle">ご家族専用ログイン</p>
+      <form id="loginForm">
+        <label for="loginEmail">メールアドレス</label>
+        <input id="loginEmail" name="email" type="email" autocomplete="username" required>
+        <label for="loginPassword">パスワード</label>
+        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">ログイン</button>
+        <p id="loginError" class="login-error" role="alert" aria-live="polite"></p>
+      </form>
+      <p class="login-warning">Supabase Authで認証します。登録済みの家族用メールアドレスとパスワードを入力してください。</p>
+    </div>
+  </section>
+
+  <div id="appContent" hidden>
+    <!-- ヘッダー -->
+    <header class="topbar" id="top">
+      <h1>見守り画面</h1>
+      <div class="meta">
+        <span class="conn"><span id="connectionDot" class="dot"></span><span id="connectionText">接続を確認中</span></span>
+        <span id="updatedAt" class="updated">最終更新：--</span>
+        <button id="refreshBtn" class="icon-btn" type="button" aria-label="更新" title="更新">↻</button>
+        <button id="logoutButton" class="logout-btn" type="button">ログアウト</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- システム状態（データ遅延・高温などの警告） -->
+      <section id="alertCard" class="alert-card" aria-live="polite">
+        <span id="alertIcon" class="sys-icon">…</span>
+        <strong id="alertTitle">データを読み込んでいます</strong>
+        <span id="alertDetail" class="sys-detail"></span>
+      </section>
+
+      <!-- 呼び出しアラート -->
+      <section id="callAlert" class="call-alert" aria-live="polite">
+        <div class="alert-icon" id="callAlertIcon">!</div>
+        <div class="call-text">
+          <b id="callAlertTitle">呼び出しはありません</b>
+          <span id="callAlertDetail">呼び出しボタンの通知状態を表示します。</span>
+          <span id="audioStatus" class="audio-status" aria-live="polite">呼び出し録音を確認しています。</span>
+        </div>
+        <div class="alert-actions">
+          <button id="playCallAudio" type="button" class="btn teal">▶ 録音を再生</button>
+        </div>
+        <audio id="latestAudio" preload="none" hidden></audio>
+      </section>
+
+      <!-- 1段目：センサー値 -->
+      <div class="row r4">
+        <article class="card">
+          <h2>温度</h2>
+          <div class="big"><span id="temperature">--</span><small>℃</small></div>
+          <div class="note">温度センサー</div>
+        </article>
+        <article class="card">
+          <h2>湿度</h2>
+          <div class="big"><span id="humidity">--</span><small>%</small></div>
+          <div class="note">相対湿度</div>
+        </article>
+        <article class="card" id="gasCard">
+          <h2>ガス・煙</h2>
+          <span id="gas" class="pill idle">--</span>
+          <div class="note">ガス・煙センサー（検知=1／なし=0）</div>
+        </article>
+        <article class="card">
+          <h2>ドア</h2>
+          <span id="door" class="pill info">--</span>
+          <div class="note">開閉センサー</div>
+        </article>
+      </div>
+
+      <!-- 2段目：操作・起床・通知 -->
+      <div class="row r3">
+        <!-- サーキュレーター -->
+        <section class="card" aria-labelledby="fanTitle">
+          <h2><span id="fanTitle">サーキュレーター</span><span id="fanStateBadge" class="pill warn sm">停止中</span></h2>
+          <div class="fanrow">
+            <span class="lbl">運転モード</span>
+            <span class="seg" role="group" aria-label="運転モード">
+              <button type="button" class="fan-btn active" data-fan-mode="AUTO">自動</button>
+              <button type="button" class="fan-btn" data-fan-mode="MANUAL">手動</button>
+            </span>
+          </div>
+
+          <div class="sub" id="manualSection">
+            <div class="subt">手動操作</div>
+            <div class="btnrow">
+              <button type="button" id="fanOnBtn" class="btn orange">ON</button>
+              <button type="button" id="fanOffBtn" class="btn dark">OFF</button>
+              <button type="button" id="fanSpeedDownBtn" class="btn ghost" aria-label="風量ダウン">－ 風量</button>
+              <button type="button" id="fanSpeedUpBtn" class="btn ghost" aria-label="風量アップ">＋ 風量</button>
+            </div>
+            <p id="fanControlStatus" class="note" role="status">操作命令をSupabase経由でRaspberry Piに送信します。</p>
+          </div>
+
+          <div class="sub" id="autoSection" aria-labelledby="controlSettingsTitle">
+            <div class="subt" id="controlSettingsTitle">自動運転の温度設定</div>
+            <div class="step">
+              <span>上限<small>この温度以上で運転</small></span>
+              <button type="button" class="temperature-step" data-temp-target="upper" data-temp-delta="-1" aria-label="上限温度を1度下げる">−</button>
+              <output id="autoUpperLimit" class="temperature-value" aria-live="polite">28</output><em>℃</em>
+              <button type="button" class="temperature-step" data-temp-target="upper" data-temp-delta="1" aria-label="上限温度を1度上げる">＋</button>
+            </div>
+            <div class="step">
+              <span>下限<small>この温度以下で停止</small></span>
+              <button type="button" class="temperature-step" data-temp-target="lower" data-temp-delta="-1" aria-label="下限温度を1度下げる">−</button>
+              <output id="autoLowerLimit" class="temperature-value" aria-live="polite">26</output><em>℃</em>
+              <button type="button" class="temperature-step" data-temp-target="lower" data-temp-delta="1" aria-label="下限温度を1度上げる">＋</button>
+            </div>
+            <div class="btnrow">
+              <button type="button" id="applyTemperatureSettings" class="btn teal mini">変更する</button>
+              <button type="button" id="resetTemperatureSettings" class="btn gray mini">初期値に戻す</button>
+            </div>
+            <p id="temperatureSettingsStatus" class="note" role="status" aria-live="polite">設定を読み込んでいます。</p>
+          </div>
+        </section>
+
+        <!-- 起床チェック -->
+        <section class="card" aria-labelledby="wakeTitle">
+          <h2 id="wakeTitle">起床チェック</h2>
+          <span id="wakeCurrentStatus" class="pill ok">在床状態を確認しています</span>
+          <p id="wakeSummary" class="note">ベッドセンサーの状態変化をもとに表示します。</p>
+          <div class="sub">
+            <div class="subt">最近の起床・在床イベント</div>
+            <ul id="wakeHistory" class="list wk"><li>まだイベントがありません。</li></ul>
+          </div>
+          <p class="note">起床時刻の確定はWeb画面側の簡易判定です。</p>
+        </section>
+
+        <!-- スマホ通知 -->
+        <section class="card" aria-labelledby="notifyTitle">
+          <h2 id="notifyTitle">スマホ通知</h2>
+          <label class="toggle"><span class="tt">ドア開閉の通知<span class="d">ドア状態が変わったとき</span></span><input class="switch" id="notifyDoor" type="checkbox" aria-label="ドア開閉の通知"></label>
+          <label class="toggle"><span class="tt">ガス・煙の通知<span class="d">しきい値を超えたとき（オン推奨）</span></span><input class="switch" id="notifyGas" type="checkbox" aria-label="ガス・煙の通知"></label>
+          <label class="toggle"><span class="tt">呼び出しの通知<span class="d">呼び出しボタンが押されたとき（オン推奨）</span></span><input class="switch" id="notifyCall" type="checkbox" aria-label="呼び出しの通知"></label>
+          <div class="sub">
+            <p id="notificationStatus" class="note" role="status" style="margin:0 0 12px">通知設定はこのブラウザに保存されます。</p>
+            <button type="button" id="testNotificationBtn" class="btn teal mini">テスト通知を送る</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- 3段目：履歴グラフ・出来事 -->
+      <div class="row r2">
+        <section class="card" id="historySection" aria-labelledby="chartTitle">
+          <h2>
+            <span>温湿度の履歴</span>
+            <span class="seg" role="group" aria-label="表示期間">
+              <button type="button" class="range-btn active" data-range="1">24時間</button>
+              <button type="button" class="range-btn" data-range="7">7日</button>
+              <button type="button" class="range-btn" data-range="30">30日</button>
+            </span>
+          </h2>
+          <div class="chart-head">
+            <div class="tabs" role="group" aria-label="グラフ項目">
+              <button type="button" class="tab active" data-field="1">温度</button>
+              <button type="button" class="tab" data-field="2">湿度</button>
+              <button type="button" class="tab" data-field="3">ガス値</button>
+            </div>
+            <div class="legend"><span><i id="legendSwatch"></i><span id="legendText">室温（℃）</span></span><span id="chartRange">直近の記録</span></div>
+          </div>
+          <strong id="chartTitle" class="sr-only">室温の推移</strong>
+          <div class="chart-wrap"><canvas id="historyChart" aria-label="センサー履歴グラフ" role="img"></canvas><div id="chartEmpty" class="chart-empty">履歴データを読み込んでいます…</div></div>
+        </section>
+
+        <section class="card" aria-labelledby="eventsTitle">
+          <h2 id="eventsTitle">最近の出来事</h2>
+          <ul id="recentEvents" class="list events"><li>センサー情報を取得するとイベントが表示されます。</li></ul>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
