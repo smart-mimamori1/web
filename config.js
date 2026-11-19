@@ -5,7 +5,7 @@ window.MONITOR_CONFIG = {
   readApiKey: "8YCJD14OU78DXBRG",
   refreshMs: 30000,
   historyResults: 100,
-  supabaseUrl: "https://qxjfkrfodteixdquawfv.supabase.co/rest/v1/",
+  supabaseUrl: "https://qxjfkrfodteixdquawfv.supabase.co",
   supabaseAnonKey: "sb_publishable_d9Fb0ZIH2Fapk5Y7dYHkyw_XnNrstxs",
   supabaseBucket: "recordings",
   deviceSettingsTable: "device_settings",
